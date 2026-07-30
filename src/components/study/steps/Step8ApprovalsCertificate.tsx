@@ -10,6 +10,7 @@ import { StatusBadge } from '../../common/StatusBadge';
 import { MinistryLogo } from '../../common/MinistryLogo';
 import { DigitalSignatureModal } from '../../common/DigitalSignatureModal';
 import { CertificateIssuanceUnit } from '../CertificateIssuanceUnit';
+import { SyncStatusPanel } from '../SyncStatusPanel';
 import { exportElementToPDF } from '../../../utils/pdfExport';
 import {
   Award,
@@ -277,8 +278,11 @@ export const Step8ApprovalsCertificate: React.FC = () => {
         </div>
       </div>
 
-      {/* Integrated Certificate Issuance Unit (Interactive Mock UI relying on CertificateService Abstraction) */}
+      {/* Integrated Certificate Issuance Unit */}
       <CertificateIssuanceUnit />
+
+      {/* Cloud & Local Storage Archive Sync Status Panel */}
+      <SyncStatusPanel requestNumber={currentRequest.requestNumber} />
 
       {/* Digital Signature Modal */}
       {activeSigner && (

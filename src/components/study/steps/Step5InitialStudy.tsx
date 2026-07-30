@@ -5,6 +5,8 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../../../context/AppContext';
+import { InspectionReportUploader } from '../InspectionReportUploader';
+import { ReportTemplateLibrary } from '../ReportTemplateLibrary';
 import {
   FileText,
   Save,
@@ -158,6 +160,12 @@ export const Step5InitialStudy: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Field Inspection Report Template Library */}
+      <ReportTemplateLibrary />
+
+      {/* Field Inspection Report Drag & Drop Uploader */}
+      <InspectionReportUploader />
 
       {/* Main View Mode: Editor vs A4 Sheet Preview */}
       {activeTab === 'editor' ? (

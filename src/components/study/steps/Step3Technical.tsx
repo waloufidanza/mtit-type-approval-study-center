@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../../context/AppContext';
 import { SpectrumStatus, SecurityStatus, FrequencyBand } from '../../../types/typeApproval';
 import { StatusBadge } from '../../common/StatusBadge';
+import { TechnicalComplexityMatrix } from '../TechnicalComplexityMatrix';
 import {
   Radio,
   ShieldCheck,
@@ -229,6 +230,9 @@ export const Step3Technical: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Risk Assessment & Technical Complexity Matrix */}
+      <TechnicalComplexityMatrix />
 
       {/* Multi-Band Frequency Table */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs space-y-4">

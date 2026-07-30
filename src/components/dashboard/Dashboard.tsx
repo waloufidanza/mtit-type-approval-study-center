@@ -7,6 +7,7 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { StatusBadge } from '../common/StatusBadge';
 import { PriorityBadge } from '../common/PriorityBadge';
+import { QuarterlyPerformanceWidget } from './QuarterlyPerformanceWidget';
 import {
   BarChart,
   Bar,
@@ -291,6 +292,9 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Quarterly Performance Analytics Widget (SLA Processing Time Analysis) */}
+      <QuarterlyPerformanceWidget />
 
       {/* Equipment Bar Chart & Critical Alerts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

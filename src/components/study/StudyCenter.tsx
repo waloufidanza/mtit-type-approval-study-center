@@ -7,11 +7,15 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { RequestRibbon } from './RequestRibbon';
 import { WorkflowSteps } from './WorkflowSteps';
+import { WorkflowGuide } from './WorkflowGuide';
 import { DecisionSidebar } from './DecisionSidebar';
 import { RequestTimeline } from './RequestTimeline';
 import { StepGuidanceModal } from './StepGuidanceModal';
 import { SmartAnalysisModal } from './SmartAnalysisModal';
 import { ExpirationAlerts } from './ExpirationAlerts';
+import { StudyTaskReminderWidget } from './StudyTaskReminderWidget';
+import { ArchiveRequestModal } from './ArchiveRequestModal';
+import { UserOnboardingTour } from './UserOnboardingTour';
 
 // Step components
 import { Step1Context } from './steps/Step1Context';
@@ -44,6 +48,8 @@ import {
   EyeOff,
   Eye,
   ShieldAlert,
+  Archive,
+  Compass,
 } from 'lucide-react';
 
 export const StudyCenter: React.FC = () => {
@@ -63,6 +69,8 @@ export const StudyCenter: React.FC = () => {
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [showGuidanceModal, setShowGuidanceModal] = useState(false);
   const [showSmartAnalysisModal, setShowSmartAnalysisModal] = useState(false);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [showOnboardingTour, setShowOnboardingTour] = useState(false);
 
   const stepTitles: Record<number, string> = {
     1: 'الخطوة 1: السياق وجمع البيانات الأولية',
@@ -235,6 +243,16 @@ export const StudyCenter: React.FC = () => {
             <span>السياسات والتعليمات</span>
           </button>
 
+          {/* Interactive Onboarding Tour Button */}
+          <button
+            onClick={() => setShowOnboardingTour(true)}
+            className="px-2.5 py-1.5 bg-indigo-50 dark:bg-indigo-950 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-800 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800 font-extrabold rounded-lg transition flex items-center gap-1.5 text-[11px]"
+            title="بدء الجولة التفاعلية لمركز الدراسة"
+          >
+            <Compass className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+            <span>الجولة التعريفية</span>
+          </button>
+
           {/* Blind Review Mode Toggle Switch */}
           <button
             onClick={toggleBlindReviewMode}
@@ -315,6 +333,9 @@ export const StudyCenter: React.FC = () => {
       {/* 4. Horizontal Stepper */}
       <WorkflowSteps />
 
+      {/* Interactive Workflow Guide for New Reviewers */}
+      <WorkflowGuide />
+
       {/* 5. Sticky Technical Reviewer Action Toolbar (Save, Previous Step, Next Step) */}
       <div className="bg-slate-900 text-white rounded-xl p-3 border border-slate-800 shadow-md flex items-center justify-between flex-wrap gap-3 sticky top-2 z-20">
         <div className="flex items-center gap-2">
@@ -336,11 +357,21 @@ export const StudyCenter: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={handleSaveWorkspace}
-            className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+            className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
           >
             <Save className="w-4 h-4" />
-            <span>حفظ مسودة العمل الفني</span>
+            <span>حفظ مسودة العمل</span>
           </button>
+
+          <button
+            onClick={() => setShowArchiveModal(true)}
+            className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
+            title="أرشفة بيانات الطلب والشهادة إلى نظام أرشفة خارجي أو Nextcloud"
+          >
+            <Archive className="w-4 h-4 text-amber-200" />
+            <span>أرشفة الطلب</span>
+          </button>
+
           <span className="text-[11px] text-emerald-400 font-mono hidden sm:inline-flex items-center gap-1 bg-slate-800 px-2.5 py-1 rounded border border-slate-700">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
             <span>{saveStatus} ({lastSaveFormatted})</span>
@@ -363,6 +394,9 @@ export const StudyCenter: React.FC = () => {
         <div className="flex-1 min-w-0 w-full space-y-4">
           {renderActiveStepComponent()}
           
+          {/* Study Mini Task & Reminder Widget */}
+          <StudyTaskReminderWidget />
+
           {/* Interactive Request Audit Log / Timeline Component */}
           <RequestTimeline requestNumber={currentRequest.requestNumber} />
         </div>
@@ -452,6 +486,20 @@ export const StudyCenter: React.FC = () => {
       <SmartAnalysisModal
         isOpen={showSmartAnalysisModal}
         onClose={() => setShowSmartAnalysisModal(false)}
+      />
+
+      {/* External Request Archiving Modal */}
+      <ArchiveRequestModal
+        isOpen={showArchiveModal}
+        onClose={() => setShowArchiveModal(false)}
+      />
+
+      {/* Interactive Onboarding Tour Modal */}
+      <UserOnboardingTour
+        isOpen={showOnboardingTour}
+        onClose={() => setShowOnboardingTour(false)}
+        onNavigateToStep={(stepNum) => setActiveStep(stepNum)}
+        currentActiveStep={activeStep}
       />
     </div>
   );

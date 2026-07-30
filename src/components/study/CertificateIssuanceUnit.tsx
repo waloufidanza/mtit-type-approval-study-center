@@ -24,6 +24,11 @@ import { CertificateHistory } from './CertificateHistory';
 import { DigitalSignaturePanel, SignatureMap } from './DigitalSignaturePanel';
 import { DigitalSealPanel, DigitalSealConfig } from './DigitalSealPanel';
 import {
+  CertificateTemplateSelector,
+  CertificateTemplateOption,
+} from './CertificateTemplateSelector';
+import { NotificationEmailCustomizer } from './NotificationEmailCustomizer';
+import {
   Award,
   CheckCircle2,
   XCircle,
@@ -40,10 +45,16 @@ import {
   Layers,
   Check,
   Copy,
+  Mail,
+  Send,
 } from 'lucide-react';
 
 export const CertificateIssuanceUnit: React.FC = () => {
   const { currentRequest, addToast, addAuditLog } = useApp();
+
+  // Certificate Template State
+  const [selectedTemplate, setSelectedTemplate] = useState<CertificateTemplateOption>('tech_devices');
+  const [showEmailCustomizer, setShowEmailCustomizer] = useState<boolean>(false);
 
   // Certificate Type & Dates State
   const [certType, setCertType] = useState<CertificateTypeOption>(CertificateType.OFFICIAL);
@@ -438,6 +449,12 @@ export const CertificateIssuanceUnit: React.FC = () => {
         </div>
       </div>
 
+      {/* Certificate Template Selector Component */}
+      <CertificateTemplateSelector
+        selectedTemplate={selectedTemplate}
+        onChangeTemplate={setSelectedTemplate}
+      />
+
       {/* Digital Signature Panel Component */}
       <DigitalSignaturePanel
         signatures={signatures}
@@ -450,9 +467,47 @@ export const CertificateIssuanceUnit: React.FC = () => {
         onChange={setSealConfig}
       />
 
+      {/* Applicant Notification Customizer Trigger Bar */}
+      <div className="p-4 bg-gradient-to-r from-blue-900 to-indigo-950 text-white rounded-2xl shadow-md flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-blue-500/20 rounded-xl border border-blue-400/30 text-blue-300">
+            <Mail className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-extrabold text-sm text-white">
+              خدمة إرسال إشعارات البريد الآلية لمقدم الطلب (Applicant Email Dispatch Service)
+            </h3>
+            <p className="text-[11px] text-blue-200">
+              تخصيص ومعاينة رسالة الإشعار بصدور الشهادة ({currentRequest.certificateNumber || 'TA-2026-88392'}) لمستلم الشركة: {currentRequest.applicant.email || 'info@company.ye'}
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setShowEmailCustomizer((prev) => !prev)}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl text-xs transition flex items-center gap-2 border border-blue-400/40 shadow-xs"
+        >
+          <Send className="w-4 h-4" />
+          <span>{showEmailCustomizer ? 'إخفاء محرر الإشعارات' : 'تخصيص وإرسال الإشعار الإلكتروني'}</span>
+        </button>
+      </div>
+
+      {/* Notification Email Customizer Drawer/Panel */}
+      {showEmailCustomizer && (
+        <NotificationEmailCustomizer
+          applicantName={currentRequest.applicant.name}
+          applicantEmail={currentRequest.applicant.email}
+          certificateNumber={currentRequest.certificateNumber || 'TA-2026-88392'}
+          brandModel={`${currentRequest.brand} ${currentRequest.model}`}
+          expiryDate={expectedExpiryDate}
+          onRequestClose={() => setShowEmailCustomizer(false)}
+        />
+      )}
+
       {/* Official A4 Certificate Preview Component */}
       <CertificatePreview
         sealConfig={sealConfig}
+        selectedTemplate={selectedTemplate}
         certificateDetails={{
           certificateNumber: currentRequest.certificateNumber || 'TA-2026-88392',
           requestNumber: currentRequest.requestNumber,

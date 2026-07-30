@@ -28,16 +28,19 @@ import {
 } from 'lucide-react';
 
 import { DigitalSealConfig } from './DigitalSealPanel';
+import { CertificateTemplateOption } from './CertificateTemplateSelector';
 
 interface CertificatePreviewProps {
   certificateDetails?: Partial<CertificateDetails>;
   sealConfig?: DigitalSealConfig;
+  selectedTemplate?: CertificateTemplateOption;
   onRequestPreviewUpdate?: () => void;
 }
 
 export const CertificatePreview: React.FC<CertificatePreviewProps> = ({
   certificateDetails,
   sealConfig,
+  selectedTemplate = 'tech_devices',
   onRequestPreviewUpdate,
 }) => {
   const [loading, setLoading] = useState(false);
@@ -169,8 +172,16 @@ export const CertificatePreview: React.FC<CertificatePreviewProps> = ({
           id="certificate-paper-a4"
           className="a4-paper bg-white text-slate-900 shadow-2xl p-6 sm:p-8 border-4 border-slate-900 relative font-sans text-xs w-full max-w-[210mm] min-h-[297mm] space-y-6"
         >
-          {/* Inner Golden Frame */}
-          <div className="border-2 border-amber-600 p-6 space-y-6 relative bg-white h-full flex flex-col justify-between overflow-hidden">
+          {/* Inner Frame with Dynamic Styling based on selectedTemplate */}
+          <div
+            className={`border-2 p-6 space-y-6 relative bg-white h-full flex flex-col justify-between overflow-hidden ${
+              selectedTemplate === 'comm_systems'
+                ? 'border-blue-700 bg-gradient-to-b from-blue-50/20 via-white to-blue-50/10'
+                : selectedTemplate === 'temp_clearance'
+                ? 'border-emerald-600 bg-gradient-to-b from-emerald-50/20 via-white to-emerald-50/10'
+                : 'border-amber-600'
+            }`}
+          >
             {/* Optional Background Watermark */}
             {(sealConfig?.watermark ?? true) && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5 z-0 select-none">
@@ -189,12 +200,30 @@ export const CertificatePreview: React.FC<CertificatePreviewProps> = ({
               <div className="text-right space-y-0.5">
                 <p className="font-extrabold text-base text-slate-900">الجمهورية اليمنية</p>
                 <p className="font-bold text-xs text-slate-800">وزارة الاتصالات وتقنية المعلومات</p>
-                <p className="text-[11px] text-slate-600">الإدارة العامة لتنظيم الاتصالات • المكتب الفني</p>
+                <p className="text-[11px] text-slate-600">
+                  {selectedTemplate === 'comm_systems'
+                    ? 'قطاع البنية التحتية والشبكات • قطاع تنظيم الاتصالات'
+                    : selectedTemplate === 'temp_clearance'
+                    ? 'إدارة التراخيص والمنافذ الجمركية • قطاع تنظيم الاتصالات'
+                    : 'الإدارة العامة لتنظيم الاتصالات • المكتب الفني'}
+                </p>
               </div>
 
               <div className="text-center font-mono space-y-1">
-                <span className="px-3 py-1 bg-amber-100 text-amber-950 border border-amber-500 rounded font-bold text-xs inline-block">
-                  نوع الشهادة: {details.certificateType.replace(/_/g, ' ')}
+                <span
+                  className={`px-3 py-1 rounded font-bold text-xs inline-block border ${
+                    selectedTemplate === 'comm_systems'
+                      ? 'bg-blue-100 text-blue-950 border-blue-500'
+                      : selectedTemplate === 'temp_clearance'
+                      ? 'bg-emerald-100 text-emerald-950 border-emerald-500'
+                      : 'bg-amber-100 text-amber-950 border-amber-500'
+                  }`}
+                >
+                  {selectedTemplate === 'comm_systems'
+                    ? 'قالب الأنظمة والشبكات'
+                    : selectedTemplate === 'temp_clearance'
+                    ? 'قالب الترخيص والإفراج المؤقت'
+                    : `نوع الشهادة: ${details.certificateType.replace(/_/g, ' ')}`}
                 </span>
                 <p className="font-bold text-slate-900 text-xs mt-1">
                   رقم الشهادة: {details.certificateNumber}
@@ -208,15 +237,26 @@ export const CertificatePreview: React.FC<CertificatePreviewProps> = ({
             {/* Title Statement */}
             <div className="text-center space-y-2 py-2">
               <h1 className="text-xl font-extrabold text-blue-950 tracking-wide">
-                شهادة موافقة نوعية لأجهزة ونظم الاتصالات
+                {selectedTemplate === 'comm_systems'
+                  ? 'شهادة اعتماد وتوافق الأنظمة والبنية التحتية الاتصالية'
+                  : selectedTemplate === 'temp_clearance'
+                  ? 'إفادة وترخيص الإفراج الفني الجمركي المؤقت'
+                  : 'شهادة موافقة نوعية لأجهزة ونظم الاتصالات'}
               </h1>
               <p className="text-[11px] text-slate-500 font-mono tracking-wider">
-                TYPE APPROVAL CERTIFICATE FOR TELECOMMUNICATION EQUIPMENT
+                {selectedTemplate === 'comm_systems'
+                  ? 'TELECOMMUNICATION INFRASTRUCTURE & NETWORK SYSTEM CERTIFICATE'
+                  : selectedTemplate === 'temp_clearance'
+                  ? 'TEMPORARY TECHNICAL CLEARANCE & CUSTOMS RELEASE PROVISIONAL PERMIT'
+                  : 'TYPE APPROVAL CERTIFICATE FOR TELECOMMUNICATION EQUIPMENT'}
               </p>
 
               <div className="p-3 bg-slate-50 border border-slate-200 rounded text-slate-800 font-bold leading-relaxed text-xs">
-                تشهد وزارة الاتصالات وتقنية المعلومات بالجمهورية اليمنية بأن الجهاز المبينة تفاصيله ومواصفاته أدناه
-                قد استوفى كافة الفحوصات المختبرية واختبارات طيف الترددات والمواصفات الفنية المعتمدة لدى الوزارة.
+                {selectedTemplate === 'comm_systems'
+                  ? 'تشهد الإدارة العامة لتنظيم الاتصالات بالجمهورية اليمنية بأن المنظومة الاتصالية والشبكية الموضحة بياناتها أدناه قد اجتازت اختبارات البروتوكولات الترددية الربط وتوافق السلامة الكهرومغناطيسية.'
+                  : selectedTemplate === 'temp_clearance'
+                  ? 'تمنح هذه الإفادة مؤقتاً للشحنات والمعدات الواردة عبر المنافذ الجمركية بغرض المعاينة والاختبار الميداني، وتلزم المستورد باستكمال كافة متطلبات المطابقة خلال الموعد المحدد.'
+                  : 'تشهد وزارة الاتصالات وتقنية المعلومات بالجمهورية اليمنية بأن الجهاز المبينة تفاصيله ومواصفاته أدناه قد استوفى كافة الفحوصات المختبرية وااختبارات طيف الترددات والمواصفات الفنية المعتمدة لدى الوزارة.'}
               </div>
             </div>
 

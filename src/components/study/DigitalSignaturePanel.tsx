@@ -5,9 +5,10 @@
  * updating the CertificatePreview immediately.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { CertificateSignature } from '../../services/certificateService';
-import { ShieldCheck, UserCheck, Calendar, CheckCircle2, Lock, Check } from 'lucide-react';
+import { CanvasSignatureModal } from './CanvasSignatureModal';
+import { ShieldCheck, UserCheck, Calendar, CheckCircle2, Lock, Check, PenTool, Image as ImageIcon } from 'lucide-react';
 
 export interface SignatureMap {
   reviewer: CertificateSignature;
@@ -50,6 +51,8 @@ export const DigitalSignaturePanel: React.FC<DigitalSignaturePanelProps> = ({
   signatures,
   onChange,
 }) => {
+  const [activeCanvasRole, setActiveCanvasRole] = useState<keyof SignatureMap | null>(null);
+
   const handleNameChange = (roleKey: keyof SignatureMap, name: string) => {
     const updated = {
       ...signatures,
@@ -69,6 +72,20 @@ export const DigitalSignaturePanel: React.FC<DigitalSignaturePanelProps> = ({
         ...signatures[roleKey],
         signed: isSigned,
         date: isSigned ? (signatures[roleKey].date || today) : '',
+      },
+    };
+    onChange(updated);
+  };
+
+  const handleSaveCanvasSignature = (roleKey: keyof SignatureMap, signatureDataUrl: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    const updated = {
+      ...signatures,
+      [roleKey]: {
+        ...signatures[roleKey],
+        signed: true,
+        date: signatures[roleKey].date || today,
+        signatureImage: signatureDataUrl,
       },
     };
     onChange(updated);
@@ -110,10 +127,10 @@ export const DigitalSignaturePanel: React.FC<DigitalSignaturePanelProps> = ({
           <ShieldCheck className="w-5 h-5 text-emerald-600" />
           <div>
             <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100">
-              لوحة التوقيعات الرقمية المعتمدة (Digital Signature Panel)
+              لوحة التوقيعات الرقمية المعتمدة (Digital Signature Canvas Panel)
             </h3>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              تحديد المسئولين المعتمدين وحالة الاعتماد للتحديث الفوري على المعاينة الرسمية
+              رسم التوقيع باليد (Canvas) أو رفع صورة التوقيع ومعاينته فورياً على المعاينة الرسمية
             </p>
           </div>
         </div>
@@ -135,59 +152,77 @@ export const DigitalSignaturePanel: React.FC<DigitalSignaturePanelProps> = ({
           return (
             <div
               key={key}
-              className={`p-3.5 rounded-xl border space-y-3 transition ${
+              className={`p-3.5 rounded-xl border space-y-3 transition flex flex-col justify-between ${
                 sig.signed
                   ? 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800'
                   : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700'
               }`}
             >
-              <div className="flex items-center justify-between gap-1">
-                <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1 truncate">
-                  <UserCheck className={`w-3.5 h-3.5 shrink-0 ${iconColor}`} />
-                  <span className="truncate">{label}</span>
-                </span>
-                <span
-                  className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border shrink-0 ${
-                    sig.signed
-                      ? 'bg-emerald-100 text-emerald-900 border-emerald-400 dark:bg-emerald-900/60 dark:text-emerald-200'
-                      : 'bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-700 dark:text-slate-300'
-                  }`}
-                >
-                  {sig.signed ? 'معتمد' : 'معلق'}
-                </span>
-              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1 truncate">
+                    <UserCheck className={`w-3.5 h-3.5 shrink-0 ${iconColor}`} />
+                    <span className="truncate">{label}</span>
+                  </span>
+                  <span
+                    className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border shrink-0 ${
+                      sig.signed
+                        ? 'bg-emerald-100 text-emerald-900 border-emerald-400 dark:bg-emerald-900/60 dark:text-emerald-200'
+                        : 'bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    {sig.signed ? 'معتمد' : 'معلق'}
+                  </span>
+                </div>
 
-              {/* Select Authorized Signer Dropdown */}
-              <div className="space-y-1 text-xs">
-                <label className="text-[10px] text-slate-500 dark:text-slate-400 font-bold block">
-                  اختر المسؤول المعتمد:
+                {/* Select Authorized Signer Dropdown */}
+                <div className="space-y-1 text-xs">
+                  <label className="text-[10px] text-slate-500 dark:text-slate-400 font-bold block">
+                    اختر المسؤول المعتمد:
+                  </label>
+                  <select
+                    value={sig.signerName}
+                    onChange={(e) => handleNameChange(key, e.target.value)}
+                    className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 font-bold text-xs focus:ring-2 focus:ring-blue-500"
+                  >
+                    {options.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                    {!options.includes(sig.signerName) && (
+                      <option value={sig.signerName}>{sig.signerName}</option>
+                    )}
+                  </select>
+                </div>
+
+                {/* Draw Canvas Button */}
+                <button
+                  onClick={() => setActiveCanvasRole(key)}
+                  className="w-full py-1.5 bg-blue-50 dark:bg-blue-950/80 hover:bg-blue-100 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-bold border border-blue-200 dark:border-blue-800 flex items-center justify-center gap-1.5 transition"
+                >
+                  <PenTool className="w-3.5 h-3.5 text-blue-600" />
+                  <span>رسم / رفع التوقيع باليد</span>
+                </button>
+
+                {/* Drawn Signature Preview Badge if present */}
+                {sig.signatureImage && (
+                  <div className="bg-white dark:bg-slate-900 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center h-12 shadow-2xs">
+                    <img src={sig.signatureImage} alt="Drawn Signature" className="max-h-full object-contain" />
+                  </div>
+                )}
+
+                {/* Checkbox for Signed Toggle */}
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer pt-1">
+                  <input
+                    type="checkbox"
+                    checked={sig.signed}
+                    onChange={(e) => handleToggleSigned(key, e.target.checked)}
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300"
+                  />
+                  <span>تفعيل التوقيع الرقمي</span>
                 </label>
-                <select
-                  value={sig.signerName}
-                  onChange={(e) => handleNameChange(key, e.target.value)}
-                  className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 font-bold text-xs focus:ring-2 focus:ring-blue-500"
-                >
-                  {options.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                  {!options.includes(sig.signerName) && (
-                    <option value={sig.signerName}>{sig.signerName}</option>
-                  )}
-                </select>
               </div>
-
-              {/* Checkbox for Signed Toggle */}
-              <label className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer pt-1">
-                <input
-                  type="checkbox"
-                  checked={sig.signed}
-                  onChange={(e) => handleToggleSigned(key, e.target.checked)}
-                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300"
-                />
-                <span>تفعيل التوقيع الرقمي</span>
-              </label>
 
               {/* Signed Date Input */}
               {sig.signed && (
@@ -208,6 +243,19 @@ export const DigitalSignaturePanel: React.FC<DigitalSignaturePanelProps> = ({
           );
         })}
       </div>
+
+      {/* Modal instance for active drawing role */}
+      {activeCanvasRole && (
+        <CanvasSignatureModal
+          isOpen={!!activeCanvasRole}
+          onClose={() => setActiveCanvasRole(null)}
+          signerTitle={rolesList.find((r) => r.key === activeCanvasRole)?.label || ''}
+          signerName={signatures[activeCanvasRole]?.signerName || ''}
+          currentSignatureUrl={signatures[activeCanvasRole]?.signatureImage}
+          onSaveSignature={(dataUrl) => handleSaveCanvasSignature(activeCanvasRole, dataUrl)}
+        />
+      )}
     </div>
   );
 };
+

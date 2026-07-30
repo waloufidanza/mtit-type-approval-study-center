@@ -5,7 +5,8 @@
 
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Sliders, Shield, Save, Moon, Sun, Check } from 'lucide-react';
+import { Sliders, Shield, Save, Moon, Sun, Check, Stamp } from 'lucide-react';
+import { SignatureSettingsManager } from './SignatureSettingsManager';
 
 export const Settings: React.FC = () => {
   const { theme, toggleTheme, addToast } = useApp();
@@ -19,7 +20,7 @@ export const Settings: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Header */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -28,7 +29,7 @@ export const Settings: React.FC = () => {
             <span>إعدادات النظام والسياسات التنظيمية للمواصفة النوعية</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            إدارة الخطة الوطنية للترددات، مدة صلاحيات الشهادات، والرسوم والاشتراطات.
+            إدارة الخطة الوطنية للترددات، مدة صلاحيات الشهادات، والرسوم والأختام والتواقيع.
           </p>
         </div>
 
@@ -91,6 +92,9 @@ export const Settings: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Signature & Seal Settings Manager */}
+      <SignatureSettingsManager />
     </div>
   );
 };
